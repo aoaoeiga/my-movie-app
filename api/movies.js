@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // ジャンルマッピング
+    // ジャンルマッピング（拡張版）
     const genreMap = {
       action: 28,
       comedy: 35,
@@ -36,11 +36,11 @@ export default async function handler(req, res) {
 
     // 言語マッピング
     const languageMap = {
-      ja: 'ja-JP',
-      en: 'en-US',
-      ko: 'ko-KR',
-      zh: 'zh-CN',
-      fr: 'fr-FR',
+      ja: 'ja',
+      en: 'en',
+      ko: 'ko',
+      zh: 'zh',
+      fr: 'fr',
       other: '',
       any: ''
     };
@@ -53,7 +53,16 @@ export default async function handler(req, res) {
       any: { min: 0, max: 300 }
     };
 
-    // 検索パラメータを構築
+    // 年代マッピング
+    const decadeMap = {
+      '1990s': { min: '1900-01-01', max: '1999-12-31' },
+      '2000s': { min: '2000-01-01', max: '2009-12-31' },
+      '2010s': { min: '2010-01-01', max: '2019-12-31' },
+      '2020s': { min: '2020-01-01', max: '2029-12-31' },
+      'any': null
+    };
+
+    // 検索パラメータを構築（優先順位順）
     let params = new URLSearchParams({
       api_key: TMDB_API_KEY,
       language: 'ja-JP',
@@ -103,7 +112,14 @@ export default async function handler(req, res) {
       params.append('with_runtime.lte', runtime.max);
     }
 
-    // 5. 言語フィルター
+    // 5. 年代フィルター（新規追加）
+    if (answers.decade && answers.decade !== 'any' && decadeMap[answers.decade]) {
+      const decade = decadeMap[answers.decade];
+      params.append('primary_release_date.gte', decade.min);
+      params.append('primary_release_date.lte', decade.max);
+    }
+
+    // 6. 言語フィルター
     if (answers.language && answers.language !== 'any') {
       if (answers.language === 'ja') {
         params.append('with_original_language', 'ja');
