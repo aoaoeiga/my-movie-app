@@ -27,16 +27,19 @@
           emoji: '🎬',
           options: [
             { value: 'anime', label: 'アニメ', emoji: '🎨' },
-            { value: 'live', label: '実写', emoji: '🎬' }
+            { value: 'live', label: '実写', emoji: '🎬' },
+            { value: 'any', label: 'どちらでもいい', emoji: '🤷' }
           ]
         },
         {
           id: 'award',
-          question: '受賞作品を見たい？',
+          question: 'どんな作品を見たい？',
           emoji: '🏆',
           options: [
-            { value: 'yes', label: '受賞作品', emoji: '🏆' },
-            { value: 'no', label: '人気作品', emoji: '✨' }
+            { value: 'award', label: '受賞作品', emoji: '🏆' },
+            { value: 'popular', label: '人気作品', emoji: '✨' },
+            { value: 'hidden', label: '隠れた名作', emoji: '💎' },
+            { value: 'any', label: 'どれでもいい', emoji: '🎲' }
           ]
         },
         {
@@ -49,7 +52,17 @@
             { value: 'horror', label: 'ホラー', emoji: '👻' },
             { value: 'romance', label: '恋愛', emoji: '💕' },
             { value: 'scifi', label: 'SF', emoji: '🚀' },
-            { value: 'drama', label: 'ドラマ', emoji: '🎭' }
+            { value: 'drama', label: 'ドラマ', emoji: '🎭' },
+            { value: 'thriller', label: 'スリラー', emoji: '😱' },
+            { value: 'fantasy', label: 'ファンタジー', emoji: '🧙' },
+            { value: 'mystery', label: 'ミステリー', emoji: '🔍' },
+            { value: 'adventure', label: '冒険', emoji: '🗺️' },
+            { value: 'crime', label: 'クライム', emoji: '🕵️' },
+            { value: 'family', label: '家族向け', emoji: '👨‍👩‍👧‍👦' },
+            { value: 'war', label: '戦争', emoji: '⚔️' },
+            { value: 'musical', label: 'ミュージカル', emoji: '🎵' },
+            { value: 'documentary', label: 'ドキュメンタリー', emoji: '📹' },
+            { value: 'any', label: 'どれでもいい', emoji: '🎬' }
           ]
         },
         {
@@ -60,7 +73,16 @@
             { value: 'exciting', label: 'ワクワク', emoji: '🤩' },
             { value: 'calm', label: 'しっとり', emoji: '🌙' },
             { value: 'thrilling', label: 'ドキドキ', emoji: '💓' },
-            { value: 'funny', label: '笑いたい', emoji: '😆' }
+            { value: 'funny', label: '笑いたい', emoji: '😆' },
+            { value: 'crying', label: '泣きたい', emoji: '😢' },
+            { value: 'inspiring', label: '感動したい', emoji: '✨' },
+            { value: 'thinking', label: '考えたい', emoji: '🤔' },
+            { value: 'relaxing', label: 'リラックス', emoji: '☕' },
+            { value: 'scared', label: '怖いの見たい', emoji: '😱' },
+            { value: 'romantic', label: 'ロマンチック', emoji: '🌹' },
+            { value: 'nostalgic', label: '懐かしい気分', emoji: '📼' },
+            { value: 'energetic', label: '元気になりたい', emoji: '⚡' },
+            { value: 'any', label: 'どんな気分でもOK', emoji: '😌' }
           ]
         },
         {
@@ -70,7 +92,11 @@
           options: [
             { value: 'ja', label: '日本語', emoji: '🇯🇵' },
             { value: 'en', label: '英語', emoji: '🇺🇸' },
-            { value: 'other', label: 'その他', emoji: '🌏' }
+            { value: 'ko', label: '韓国語', emoji: '🇰🇷' },
+            { value: 'zh', label: '中国語', emoji: '🇨🇳' },
+            { value: 'fr', label: 'フランス語', emoji: '🇫🇷' },
+            { value: 'other', label: 'その他', emoji: '🌏' },
+            { value: 'any', label: 'どれでもいい', emoji: '🌐' }
           ]
         },
         {
@@ -92,7 +118,8 @@
             { value: 'modern', label: '現代', emoji: '🏙️' },
             { value: 'past', label: '過去', emoji: '🏛️' },
             { value: 'future', label: '未来', emoji: '🚀' },
-            { value: 'fantasy', label: 'ファンタジー', emoji: '🧙' }
+            { value: 'fantasy', label: 'ファンタジー', emoji: '🧙' },
+            { value: 'any', label: 'どれでもいい', emoji: '🌍' }
           ]
         },
         {
@@ -103,7 +130,8 @@
             { value: 'alone', label: '一人', emoji: '🧘' },
             { value: 'friends', label: '友達', emoji: '👯' },
             { value: 'partner', label: '恋人', emoji: '💑' },
-            { value: 'family', label: '家族', emoji: '👨‍👩‍👧‍👦' }
+            { value: 'family', label: '家族', emoji: '👨‍👩‍👧‍👦' },
+            { value: 'any', label: 'どれでもいい', emoji: '👥' }
           ]
         }
       ];
@@ -112,6 +140,12 @@
         setAnswers(prev => ({ ...prev, [questionId]: value }));
         if (step < questions.length - 1) {
           setTimeout(() => setStep(step + 1), 300);
+        }
+      };
+
+      const goBack = () => {
+        if (step > 0) {
+          setStep(step - 1);
         }
       };
 
@@ -216,7 +250,7 @@
 
       return (
         <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 p-6">
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-3xl mx-auto">
             <h1 className="text-6xl font-black text-white mb-8 text-center drop-shadow-lg">
               🎬 映画診断
             </h1>
@@ -234,33 +268,46 @@
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-10 shadow-2xl">
+            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl">
               <div className="text-center mb-8">
                 <div className="text-7xl mb-4 animate-pulse">{currentQuestion.emoji}</div>
-                <h2 className="text-4xl font-bold text-white">{currentQuestion.question}</h2>
+                <h2 className="text-3xl font-bold text-white">{currentQuestion.question}</h2>
               </div>
 
-              <div className={`grid gap-4 ${currentQuestion.options.length > 4 ? 'grid-cols-2' : 'grid-cols-2'}`}>
+              <div className={`grid gap-3 ${currentQuestion.options.length > 9 ? 'grid-cols-4' : currentQuestion.options.length > 6 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 {currentQuestion.options.map(option => (
                   <button
                     key={option.value}
                     onClick={() => handleAnswer(currentQuestion.id, option.value)}
-                    className="p-6 rounded-2xl font-bold bg-white/20 hover:bg-white/30 text-white transform hover:scale-105 transition-all duration-200 shadow-lg"
+                    className={`p-4 rounded-xl font-bold bg-white/20 hover:bg-white/30 text-white transform hover:scale-105 transition-all duration-200 shadow-lg ${
+                      answers[currentQuestion.id] === option.value ? 'ring-4 ring-yellow-400 bg-white/40' : ''
+                    }`}
                   >
-                    <div className="text-4xl mb-2">{option.emoji}</div>
-                    <div className="text-lg">{option.label}</div>
+                    <div className="text-3xl mb-1">{option.emoji}</div>
+                    <div className="text-sm">{option.label}</div>
                   </button>
                 ))}
               </div>
 
-              {allAnswered && (
-                <button
-                  onClick={findMovie}
-                  className="w-full mt-8 bg-gradient-to-r from-yellow-400 to-purple-500 text-white py-4 rounded-xl text-xl font-black hover:scale-105 transition-transform shadow-xl animate-pulse"
-                >
-                  ✨ 映画を見つける！ 🎬
-                </button>
-              )}
+              <div className="flex gap-4 mt-6">
+                {step > 0 && (
+                  <button
+                    onClick={goBack}
+                    className="flex-1 bg-white/20 hover:bg-white/30 text-white py-3 rounded-xl font-bold transition-all"
+                  >
+                    ← 前の質問に戻る
+                  </button>
+                )}
+                
+                {allAnswered && (
+                  <button
+                    onClick={findMovie}
+                    className="flex-1 bg-gradient-to-r from-yellow-400 to-purple-500 text-white py-3 rounded-xl font-black hover:scale-105 transition-transform shadow-xl animate-pulse"
+                  >
+                    ✨ 映画を見つける！ 🎬
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
