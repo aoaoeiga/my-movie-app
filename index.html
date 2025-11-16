@@ -8,6 +8,228 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap');
+    
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #0a0a0a;
+    }
+
+    @keyframes ambient-light {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.6; }
+    }
+
+    .ambient-light {
+      animation: ambient-light 4s ease-in-out infinite;
+    }
+
+    @keyframes spotlight-sweep {
+      0% { left: -100%; }
+      100% { left: 200%; }
+    }
+
+    .spotlight {
+      position: absolute;
+      width: 50%;
+      height: 200%;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 215, 0, 0.1) 50%, 
+        transparent);
+      animation: spotlight-sweep 8s linear infinite;
+      pointer-events: none;
+    }
+
+    .screen-glow {
+      box-shadow: 
+        0 0 80px rgba(79, 70, 229, 0.4),
+        inset 0 0 40px rgba(79, 70, 229, 0.1);
+    }
+
+    .seat-light {
+      position: relative;
+    }
+
+    .seat-light::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(167, 139, 250, 0.8) 50%, 
+        transparent);
+    }
+
+    @keyframes flicker-screen {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.97; }
+    }
+
+    .flicker {
+      animation: flicker-screen 0.15s infinite;
+    }
+
+    .cinema-card {
+      background: linear-gradient(to bottom, #1a1a1a, #0d0d0d);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cinema-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(167, 139, 250, 0.8) 50%, 
+        transparent);
+    }
+
+    @keyframes slide-in {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .slide-in {
+      animation: slide-in 0.6s ease-out;
+    }
+
+    .projection-light {
+      background: radial-gradient(ellipse at top, 
+        rgba(167, 139, 250, 0.15) 0%, 
+        transparent 70%);
+    }
+
+    .ticket-stub {
+      background: linear-gradient(135deg, #2d1b69 0%, #1a0f3d 100%);
+      border-left: 3px dashed rgba(167, 139, 250, 0.5);
+      position: relative;
+    }
+
+    .ticket-stub::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      background: #0a0a0a;
+      border-radius: 50%;
+      border: 1px solid rgba(167, 139, 250, 0.3);
+    }
+
+    .movie-screen {
+      background: linear-gradient(to bottom, 
+        #1a1a2e 0%, 
+        #16213e 50%, 
+        #0f1419 100%);
+      box-shadow: 
+        0 10px 100px rgba(79, 70, 229, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes progress-glow {
+      0%, 100% {
+        box-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(167, 139, 250, 0.8);
+      }
+    }
+
+    .progress-bar {
+      animation: progress-glow 2s ease-in-out infinite;
+    }
+
+    .seat-button {
+      position: relative;
+      background: linear-gradient(to bottom, #2d1b69, #1a0f3d);
+      border: 2px solid rgba(167, 139, 250, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .seat-button:hover {
+      background: linear-gradient(to bottom, #4c2a9f, #2d1b69);
+      border-color: rgba(167, 139, 250, 0.6);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
+    }
+
+    .seat-button.selected {
+      background: linear-gradient(to bottom, #7c3aed, #5b21b6);
+      border-color: rgba(167, 139, 250, 0.8);
+      box-shadow: 0 0 30px rgba(124, 58, 237, 0.6);
+    }
+
+    .cinema-title {
+      text-shadow: 0 0 20px rgba(167, 139, 250, 0.6);
+    }
+
+    .text-box {
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(91, 33, 182, 0.2));
+      border: 2px solid rgba(167, 139, 250, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      position: relative;
+      overflow: hidden;
+      font-size: 18px;
+      font-weight: 900;
+      color: rgba(167, 139, 250, 1);
+      letter-spacing: -1px;
+    }
+
+    .text-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .seat-button:hover .text-box::before {
+      opacity: 1;
+    }
+
+    @keyframes film-roll {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .film-roll {
+      animation: film-roll 4s linear infinite;
+    }
+
+    .loading-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 4px solid rgba(167, 139, 250, 0.2);
+      border-top-color: rgba(167, 139, 250, 0.8);
+      margin: 0 auto;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
@@ -23,115 +245,40 @@
       const questions = [
         {
           id: 'type',
-          question: 'アニメ？実写？',
-          emoji: '🎬',
+          question: 'どちらの作品タイプをお選びですか？',
+          subtitle: 'SCREEN 1',
           options: [
-            { value: 'anime', label: 'アニメ', emoji: '🎨' },
-            { value: 'live', label: '実写', emoji: '🎬' },
-            { value: 'any', label: 'どちらでもいい', emoji: '🤷' }
-          ]
-        },
-        {
-          id: 'award',
-          question: 'どんな作品を見たい？',
-          emoji: '🏆',
-          options: [
-            { value: 'award', label: '受賞作品', emoji: '🏆' },
-            { value: 'popular', label: '人気作品', emoji: '✨' },
-            { value: 'hidden', label: '隠れた名作', emoji: '💎' },
-            { value: 'any', label: 'どれでもいい', emoji: '🎲' }
+            { value: 'anime', label: 'アニメーション', desc: 'Animation', code: 'ANI' },
+            { value: 'live', label: '実写映画', desc: 'Live Action', code: 'LIVE' },
+            { value: 'any', label: 'おまかせ', desc: 'Any Type', code: 'ALL' }
           ]
         },
         {
           id: 'genre',
-          question: '好きなジャンルは？',
-          emoji: '🎭',
+          question: 'お好みのジャンルは？',
+          subtitle: 'SCREEN 2',
           options: [
-            { value: 'action', label: 'アクション', emoji: '💥' },
-            { value: 'comedy', label: 'コメディ', emoji: '😂' },
-            { value: 'horror', label: 'ホラー', emoji: '👻' },
-            { value: 'romance', label: '恋愛', emoji: '💕' },
-            { value: 'scifi', label: 'SF', emoji: '🚀' },
-            { value: 'drama', label: 'ドラマ', emoji: '🎭' },
-            { value: 'thriller', label: 'スリラー', emoji: '😱' },
-            { value: 'fantasy', label: 'ファンタジー', emoji: '🧙' },
-            { value: 'mystery', label: 'ミステリー', emoji: '🔍' },
-            { value: 'adventure', label: '冒険', emoji: '🗺️' },
-            { value: 'crime', label: 'クライム', emoji: '🕵️' },
-            { value: 'family', label: '家族向け', emoji: '👨‍👩‍👧‍👦' },
-            { value: 'war', label: '戦争', emoji: '⚔️' },
-            { value: 'musical', label: 'ミュージカル', emoji: '🎵' },
-            { value: 'documentary', label: 'ドキュメンタリー', emoji: '📹' },
-            { value: 'any', label: 'どれでもいい', emoji: '🎬' }
+            { value: 'action', label: 'アクション', desc: 'Action', code: 'ACT' },
+            { value: 'comedy', label: 'コメディ', desc: 'Comedy', code: 'COM' },
+            { value: 'horror', label: 'ホラー', desc: 'Horror', code: 'HOR' },
+            { value: 'romance', label: 'ロマンス', desc: 'Romance', code: 'ROM' },
+            { value: 'scifi', label: 'SF', desc: 'Sci-Fi', code: 'SCI' },
+            { value: 'drama', label: 'ドラマ', desc: 'Drama', code: 'DRA' },
+            { value: 'thriller', label: 'スリラー', desc: 'Thriller', code: 'THR' },
+            { value: 'fantasy', label: 'ファンタジー', desc: 'Fantasy', code: 'FAN' },
+            { value: 'any', label: 'おまかせ', desc: 'Any Genre', code: 'ALL' }
           ]
         },
         {
           id: 'mood',
-          question: '今の気分は？',
-          emoji: '😊',
+          question: '今日の気分は？',
+          subtitle: 'SCREEN 3',
           options: [
-            { value: 'exciting', label: 'ワクワク', emoji: '🤩' },
-            { value: 'calm', label: 'しっとり', emoji: '🌙' },
-            { value: 'thrilling', label: 'ドキドキ', emoji: '💓' },
-            { value: 'funny', label: '笑いたい', emoji: '😆' },
-            { value: 'crying', label: '泣きたい', emoji: '😢' },
-            { value: 'inspiring', label: '感動したい', emoji: '✨' },
-            { value: 'thinking', label: '考えたい', emoji: '🤔' },
-            { value: 'relaxing', label: 'リラックス', emoji: '☕' },
-            { value: 'scared', label: '怖いの見たい', emoji: '😱' },
-            { value: 'romantic', label: 'ロマンチック', emoji: '🌹' },
-            { value: 'nostalgic', label: '懐かしい気分', emoji: '📼' },
-            { value: 'energetic', label: '元気になりたい', emoji: '⚡' },
-            { value: 'any', label: 'どんな気分でもOK', emoji: '😌' }
-          ]
-        },
-        {
-          id: 'language',
-          question: '言語は？',
-          emoji: '🌍',
-          options: [
-            { value: 'ja', label: '日本語', emoji: '🇯🇵' },
-            { value: 'en', label: '英語', emoji: '🇺🇸' },
-            { value: 'ko', label: '韓国語', emoji: '🇰🇷' },
-            { value: 'zh', label: '中国語', emoji: '🇨🇳' },
-            { value: 'fr', label: 'フランス語', emoji: '🇫🇷' },
-            { value: 'other', label: 'その他', emoji: '🌏' },
-            { value: 'any', label: 'どれでもいい', emoji: '🌐' }
-          ]
-        },
-        {
-          id: 'runtime',
-          question: '視聴時間は？',
-          emoji: '⏱️',
-          options: [
-            { value: 'short', label: '短め (90分以下)', emoji: '⚡' },
-            { value: 'medium', label: '普通 (90-120分)', emoji: '⏰' },
-            { value: 'long', label: '長め (120分以上)', emoji: '🎞️' },
-            { value: 'any', label: '気にしない', emoji: '🤷' }
-          ]
-        },
-        {
-          id: 'setting',
-          question: '舞台・世界観は？',
-          emoji: '🌎',
-          options: [
-            { value: 'modern', label: '現代', emoji: '🏙️' },
-            { value: 'past', label: '過去', emoji: '🏛️' },
-            { value: 'future', label: '未来', emoji: '🚀' },
-            { value: 'fantasy', label: 'ファンタジー', emoji: '🧙' },
-            { value: 'any', label: 'どれでもいい', emoji: '🌍' }
-          ]
-        },
-        {
-          id: 'with',
-          question: '誰と見る？',
-          emoji: '👥',
-          options: [
-            { value: 'alone', label: '一人', emoji: '🧘' },
-            { value: 'friends', label: '友達', emoji: '👯' },
-            { value: 'partner', label: '恋人', emoji: '💑' },
-            { value: 'family', label: '家族', emoji: '👨‍👩‍👧‍👦' },
-            { value: 'any', label: 'どれでもいい', emoji: '👥' }
+            { value: 'exciting', label: '興奮したい', desc: 'Exciting', code: 'EXC' },
+            { value: 'calm', label: '落ち着きたい', desc: 'Calm', code: 'CAL' },
+            { value: 'funny', label: '笑いたい', desc: 'Funny', code: 'FUN' },
+            { value: 'crying', label: '感動したい', desc: 'Emotional', code: 'EMO' },
+            { value: 'any', label: 'おまかせ', desc: 'Any Mood', code: 'ALL' }
           ]
         }
       ];
@@ -181,10 +328,23 @@
 
       if (loading) {
         return (
-          <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-8xl animate-bounce mb-6">🎬</div>
-              <p className="text-white text-2xl font-bold">映画を探しています...</p>
+          <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
+            <div className="projection-light absolute inset-0"></div>
+            <div className="spotlight"></div>
+            <div className="text-center relative z-10 slide-in">
+              <div className="movie-screen w-80 h-64 mx-auto mb-12 rounded-2xl flex items-center justify-center relative overflow-hidden">
+                <div className="flicker absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900 opacity-20"></div>
+                <div className="loading-circle film-roll"></div>
+              </div>
+              <h2 className="text-purple-400 text-4xl font-black mb-6 cinema-title">
+                NOW LOADING
+              </h2>
+              <div className="w-80 h-2 bg-gray-900 rounded-full mx-auto overflow-hidden border border-purple-500/30">
+                <div className="h-full bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-600 progress-bar" style={{width: '100%'}}></div>
+              </div>
+              <p className="text-purple-300 mt-6 text-lg tracking-wide">
+                あなたにぴったりの作品を探しています...
+              </p>
             </div>
           </div>
         );
@@ -192,56 +352,78 @@
 
       if (movie) {
         return (
-          <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 p-6">
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl">
-                <div className="text-center mb-6">
-                  <div className="text-6xl mb-4">🎬</div>
-                  <h2 className="text-3xl font-black text-white mb-2">あなたにおすすめの映画</h2>
+          <div className="min-h-screen bg-black p-6 relative overflow-hidden">
+            <div className="projection-light absolute inset-0"></div>
+            <div className="spotlight"></div>
+            
+            <div className="max-w-7xl mx-auto relative z-10 slide-in">
+              <div className="screen-glow bg-gradient-to-b from-gray-900 to-black rounded-3xl overflow-hidden border border-purple-500/30">
+                <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 px-8 py-6 border-b border-purple-500/30 seat-light">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-purple-400 text-3xl font-black cinema-title">NOW SHOWING</h2>
+                      <p className="text-purple-300 mt-1">あなたへのおすすめ作品</p>
+                    </div>
+                    <div className="text-purple-400 text-xl font-bold">SCREEN 1</div>
+                  </div>
                 </div>
                 
-                {movie.poster && (
-                  <img 
-                    src={movie.poster} 
-                    alt={movie.title}
-                    className="w-full max-w-md mx-auto rounded-2xl shadow-xl mb-6"
-                  />
-                )}
-                
-                <h3 className="text-5xl font-black text-white mb-4 text-center">{movie.title}</h3>
-                
-                <div className="flex justify-center gap-4 mb-6 flex-wrap">
-                  {movie.year && (
-                    <span className="bg-white/20 px-4 py-2 rounded-full text-white font-bold">
-                      📅 {movie.year}年
-                    </span>
-                  )}
-                  {movie.rating && (
-                    <span className="bg-yellow-500/30 px-4 py-2 rounded-full text-white font-bold">
-                      ⭐ {movie.rating}
-                    </span>
-                  )}
-                  {movie.runtime && (
-                    <span className="bg-blue-500/30 px-4 py-2 rounded-full text-white font-bold">
-                      ⏱️ {movie.runtime}分
-                    </span>
-                  )}
-                </div>
+                <div className="p-8">
+                  <div className="grid md:grid-cols-5 gap-10">
+                    <div className="md:col-span-2">
+                      <div className="relative">
+                        <div className="absolute -inset-4 bg-purple-600 opacity-20 blur-3xl rounded-2xl"></div>
+                        <div className="relative movie-screen rounded-2xl overflow-hidden border-2 border-purple-500/50">
+                          <img 
+                            src={movie.poster} 
+                            alt={movie.title}
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="md:col-span-3 flex flex-col justify-center">
+                      <h3 className="text-6xl font-black text-white mb-8 leading-tight cinema-title">
+                        {movie.title}
+                      </h3>
+                      
+                      <div className="grid grid-cols-3 gap-4 mb-8">
+                        <div className="ticket-stub rounded-xl p-5 text-center">
+                          <div className="text-purple-400 text-sm font-bold mb-2">公開年</div>
+                          <div className="text-white text-3xl font-black">{movie.year}</div>
+                        </div>
+                        <div className="ticket-stub rounded-xl p-5 text-center">
+                          <div className="text-purple-400 text-sm font-bold mb-2">評価</div>
+                          <div className="text-purple-400 text-3xl font-black">{movie.rating}</div>
+                        </div>
+                        <div className="ticket-stub rounded-xl p-5 text-center">
+                          <div className="text-purple-400 text-sm font-bold mb-2">上映時間</div>
+                          <div className="text-white text-3xl font-black">{movie.runtime}分</div>
+                        </div>
+                      </div>
 
-                {movie.genres && (
-                  <p className="text-blue-200 text-center mb-4 font-semibold">
-                    🎭 {movie.genres}
-                  </p>
-                )}
-                
-                <p className="text-blue-100 text-lg leading-relaxed mb-8">{movie.desc}</p>
-                
-                <button 
-                  onClick={reset}
-                  className="w-full bg-gradient-to-r from-yellow-400 to-pink-500 text-white py-4 px-8 rounded-xl font-bold text-xl hover:scale-105 transition-transform"
-                >
-                  🔄 もう一度診断する
-                </button>
+                      <div className="mb-6">
+                        <div className="inline-block bg-purple-900/50 border border-purple-500/50 px-6 py-3 rounded-full">
+                          <span className="text-purple-300 font-bold">{movie.genres}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="cinema-card rounded-xl p-6 mb-8">
+                        <p className="text-gray-300 text-lg leading-relaxed">
+                          {movie.desc}
+                        </p>
+                      </div>
+                      
+                      <button 
+                        onClick={reset}
+                        className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white py-5 px-8 rounded-xl font-black text-xl transition-all transform hover:scale-105 shadow-xl border border-purple-500/50"
+                      >
+                        他の作品を探す
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -249,62 +431,83 @@
       }
 
       return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 p-6">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-6xl font-black text-white mb-8 text-center drop-shadow-lg">
-              🎬 映画診断
-            </h1>
-
-            <div className="mb-6">
-              <div className="flex justify-between mb-2">
-                <span className="text-white font-bold">質問 {step + 1} / {questions.length}</span>
-                <span className="text-white font-bold">{Math.round(((step + 1) / questions.length) * 100)}%</span>
+        <div className="min-h-screen bg-black p-6 relative overflow-hidden">
+          <div className="projection-light absolute inset-0"></div>
+          <div className="spotlight"></div>
+          
+          <div className="max-w-5xl mx-auto relative z-10">
+            <div className="text-center mb-12 slide-in">
+              <div className="mb-6">
+                <div className="inline-block bg-purple-900/30 border-2 border-purple-500/50 rounded-full px-8 py-3 mb-6">
+                  <span className="text-purple-400 text-sm font-bold tracking-widest">PREMIUM CINEMA</span>
+                </div>
               </div>
-              <div className="w-full bg-white/20 rounded-full h-3">
+              <h1 className="text-7xl font-black mb-4 cinema-title">
+                <span className="text-white">MOVIE</span>
+                <span className="text-purple-400"> FINDER</span>
+              </h1>
+              <p className="text-purple-300 text-2xl font-semibold">
+                あなただけの映画体験を見つけましょう
+              </p>
+            </div>
+
+            <div className="mb-8">
+              <div className="flex justify-between text-purple-400 font-bold mb-3 text-lg">
+                <span>STEP {step + 1} / {questions.length}</span>
+                <span>{Math.round(((step + 1) / questions.length) * 100)}%</span>
+              </div>
+              <div className="w-full bg-gray-900 rounded-full h-3 overflow-hidden border border-purple-500/30">
                 <div 
-                  className="bg-gradient-to-r from-yellow-400 to-pink-500 h-3 rounded-full transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-purple-600 to-indigo-600 transition-all duration-500 progress-bar rounded-full"
                   style={{ width: `${((step + 1) / questions.length) * 100}%` }}
                 ></div>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl">
-              <div className="text-center mb-8">
-                <div className="text-7xl mb-4 animate-pulse">{currentQuestion.emoji}</div>
-                <h2 className="text-3xl font-bold text-white">{currentQuestion.question}</h2>
+            <div className="cinema-card rounded-3xl p-10 slide-in">
+              <div className="text-center mb-12">
+                <div className="inline-block bg-purple-900/50 border border-purple-500/50 rounded-full px-6 py-2 mb-6">
+                  <span className="text-purple-400 font-bold text-sm tracking-wider">{currentQuestion.subtitle}</span>
+                </div>
+                <h2 className="text-5xl font-black text-white mb-4 cinema-title">
+                  {currentQuestion.question}
+                </h2>
               </div>
 
-              <div className={`grid gap-3 ${currentQuestion.options.length > 9 ? 'grid-cols-4' : currentQuestion.options.length > 6 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              <div className={`grid gap-5 mb-8 ${currentQuestion.options.length > 6 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 {currentQuestion.options.map(option => (
                   <button
                     key={option.value}
                     onClick={() => handleAnswer(currentQuestion.id, option.value)}
-                    className={`p-4 rounded-xl font-bold bg-white/20 hover:bg-white/30 text-white transform hover:scale-105 transition-all duration-200 shadow-lg ${
-                      answers[currentQuestion.id] === option.value ? 'ring-4 ring-yellow-400 bg-white/40' : ''
+                    className={`seat-button p-6 rounded-xl font-bold ${
+                      answers[currentQuestion.id] === option.value ? 'selected' : ''
                     }`}
                   >
-                    <div className="text-3xl mb-1">{option.emoji}</div>
-                    <div className="text-sm">{option.label}</div>
+                    <div className="text-box">
+                      {option.code}
+                    </div>
+                    <div className="text-xl text-white font-black mb-1">{option.label}</div>
+                    <div className="text-sm text-purple-300">{option.desc}</div>
                   </button>
                 ))}
               </div>
 
-              <div className="flex gap-4 mt-6">
+              <div className="flex gap-4">
                 {step > 0 && (
                   <button
                     onClick={goBack}
-                    className="flex-1 bg-white/20 hover:bg-white/30 text-white py-3 rounded-xl font-bold transition-all"
+                    className="flex-1 border-2 border-purple-500/50 bg-gray-900/50 hover:bg-gray-800/50 text-purple-400 py-4 rounded-xl font-bold text-lg transition-all"
                   >
-                    ← 前の質問に戻る
+                    ← 前へ戻る
                   </button>
                 )}
                 
                 {allAnswered && (
                   <button
                     onClick={findMovie}
-                    className="flex-1 bg-gradient-to-r from-yellow-400 to-purple-500 text-white py-3 rounded-xl font-black hover:scale-105 transition-transform shadow-xl animate-pulse"
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white py-4 rounded-xl font-black text-xl transition-all transform hover:scale-105 shadow-xl border border-purple-500/50"
                   >
-                    ✨ 映画を見つける！ 🎬
+                    作品を検索
                   </button>
                 )}
               </div>
