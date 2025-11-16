@@ -182,18 +182,18 @@
     }
 
     .text-box {
-      width: 70px;
-      height: 70px;
+      width: 56px;
+      height: 56px;
       border-radius: 12px;
       background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(91, 33, 182, 0.2));
       border: 2px solid rgba(167, 139, 250, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 12px;
+      margin: 0 auto 8px;
       position: relative;
       overflow: hidden;
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 900;
       color: rgba(167, 139, 250, 1);
       letter-spacing: -0.5px;
@@ -229,6 +229,27 @@
       border-top-color: rgba(167, 139, 250, 0.8);
       margin: 0 auto;
     }
+
+    /* スマホ対応 */
+    @media (max-width: 640px) {
+      .text-box {
+        width: 48px;
+        height: 48px;
+        font-size: 11px;
+      }
+      
+      h1 {
+        font-size: 3rem !important;
+      }
+      
+      h2 {
+        font-size: 2rem !important;
+      }
+      
+      .seat-button {
+        padding: 1rem !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -246,7 +267,7 @@
         {
           id: 'type',
           question: 'アニメ？実写？',
-          subtitle: 'SCREEN 1',
+          subtitle: 'SCREEN 1 - 最優先',
           options: [
             { value: 'anime', label: 'アニメ', desc: 'Animation', code: 'ANI' },
             { value: 'live', label: '実写', desc: 'Live', code: 'LIVE' },
@@ -254,13 +275,16 @@
           ]
         },
         {
-          id: 'award',
-          question: 'どんな作品を見たい？',
+          id: 'language',
+          question: '言語は？',
           subtitle: 'SCREEN 2',
           options: [
-            { value: 'award', label: '受賞作品', desc: 'Award', code: 'AWD' },
-            { value: 'popular', label: '人気作品', desc: 'Popular', code: 'POP' },
-            { value: 'hidden', label: '隠れた名作', desc: 'Hidden', code: 'HID' },
+            { value: 'ja', label: '日本語', desc: 'Japanese', code: 'JPN' },
+            { value: 'en', label: '英語', desc: 'English', code: 'ENG' },
+            { value: 'ko', label: '韓国語', desc: 'Korean', code: 'KOR' },
+            { value: 'zh', label: '中国語', desc: 'Chinese', code: 'CHN' },
+            { value: 'fr', label: 'フランス語', desc: 'French', code: 'FRA' },
+            { value: 'other', label: 'その他', desc: 'Other', code: 'OTH' },
             { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
           ]
         },
@@ -288,9 +312,43 @@
           ]
         },
         {
+          id: 'award',
+          question: 'どんな作品を見たい？',
+          subtitle: 'SCREEN 4',
+          options: [
+            { value: 'award', label: '受賞作品', desc: 'Award', code: 'AWD' },
+            { value: 'popular', label: '人気作品', desc: 'Popular', code: 'POP' },
+            { value: 'hidden', label: '隠れた名作', desc: 'Hidden', code: 'HID' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'decade',
+          question: '何年代の作品？',
+          subtitle: 'SCREEN 5',
+          options: [
+            { value: '1990s', label: '90年代以前', desc: '~1999', code: '90s' },
+            { value: '2000s', label: '00年代', desc: '2000-2009', code: '00s' },
+            { value: '2010s', label: '10年代', desc: '2010-2019', code: '10s' },
+            { value: '2020s', label: '20年代', desc: '2020~', code: '20s' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'runtime',
+          question: '視聴時間は？',
+          subtitle: 'SCREEN 6',
+          options: [
+            { value: 'short', label: '短め (90分以下)', desc: 'Short', code: 'SHT' },
+            { value: 'medium', label: '普通 (90-120分)', desc: 'Medium', code: 'MED' },
+            { value: 'long', label: '長め (120分以上)', desc: 'Long', code: 'LNG' },
+            { value: 'any', label: '気にしない', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
           id: 'mood',
           question: '今の気分は？',
-          subtitle: 'SCREEN 4',
+          subtitle: 'SCREEN 7',
           options: [
             { value: 'exciting', label: 'ワクワク', desc: 'Exciting', code: 'EXC' },
             { value: 'calm', label: 'しっとり', desc: 'Calm', code: 'CAL' },
@@ -308,43 +366,6 @@
           ]
         },
         {
-          id: 'decade',
-          question: '何年代の作品？',
-          subtitle: 'SCREEN 5',
-          options: [
-            { value: '1990s', label: '90年代以前', desc: '~1999', code: '90s' },
-            { value: '2000s', label: '00年代', desc: '2000-2009', code: '00s' },
-            { value: '2010s', label: '10年代', desc: '2010-2019', code: '10s' },
-            { value: '2020s', label: '20年代', desc: '2020~', code: '20s' },
-            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
-          ]
-        },
-        {
-          id: 'language',
-          question: '言語は？',
-          subtitle: 'SCREEN 6',
-          options: [
-            { value: 'ja', label: '日本語', desc: 'Japanese', code: 'JPN' },
-            { value: 'en', label: '英語', desc: 'English', code: 'ENG' },
-            { value: 'ko', label: '韓国語', desc: 'Korean', code: 'KOR' },
-            { value: 'zh', label: '中国語', desc: 'Chinese', code: 'CHN' },
-            { value: 'fr', label: 'フランス語', desc: 'French', code: 'FRA' },
-            { value: 'other', label: 'その他', desc: 'Other', code: 'OTH' },
-            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
-          ]
-        },
-        {
-          id: 'runtime',
-          question: '視聴時間は？',
-          subtitle: 'SCREEN 7',
-          options: [
-            { value: 'short', label: '短め (90分以下)', desc: 'Short', code: 'SHT' },
-            { value: 'medium', label: '普通 (90-120分)', desc: 'Medium', code: 'MED' },
-            { value: 'long', label: '長め (120分以上)', desc: 'Long', code: 'LNG' },
-            { value: 'any', label: '気にしない', desc: 'Any', code: 'ALL' }
-          ]
-        },
-        {
           id: 'setting',
           question: '舞台・世界観は？',
           subtitle: 'SCREEN 8',
@@ -359,7 +380,7 @@
         {
           id: 'with',
           question: '誰と見る？',
-          subtitle: 'SCREEN 9',
+          subtitle: 'SCREEN 9 - 最低優先',
           options: [
             { value: 'alone', label: '一人', desc: 'Alone', code: 'ALN' },
             { value: 'friends', label: '友達', desc: 'Friends', code: 'FRD' },
@@ -415,21 +436,21 @@
 
       if (loading) {
         return (
-          <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
+          <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden px-4">
             <div className="projection-light absolute inset-0"></div>
             <div className="spotlight"></div>
-            <div className="text-center relative z-10 slide-in">
-              <div className="movie-screen w-80 h-64 mx-auto mb-12 rounded-2xl flex items-center justify-center relative overflow-hidden">
+            <div className="text-center relative z-10 slide-in w-full max-w-md">
+              <div className="movie-screen w-full max-w-xs h-48 mx-auto mb-8 rounded-2xl flex items-center justify-center relative overflow-hidden">
                 <div className="flicker absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900 opacity-20"></div>
                 <div className="loading-circle film-roll"></div>
               </div>
-              <h2 className="text-purple-400 text-4xl font-black mb-6 cinema-title">
+              <h2 className="text-purple-400 text-3xl md:text-4xl font-black mb-6 cinema-title">
                 NOW LOADING
               </h2>
-              <div className="w-80 h-2 bg-gray-900 rounded-full mx-auto overflow-hidden border border-purple-500/30">
+              <div className="w-full max-w-xs h-2 bg-gray-900 rounded-full mx-auto overflow-hidden border border-purple-500/30">
                 <div className="h-full bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-600 progress-bar" style={{width: '100%'}}></div>
               </div>
-              <p className="text-purple-300 mt-6 text-lg tracking-wide">
+              <p className="text-purple-300 mt-6 text-base md:text-lg tracking-wide">
                 あなたにぴったりの作品を探しています...
               </p>
             </div>
@@ -439,28 +460,28 @@
 
       if (movie) {
         return (
-          <div className="min-h-screen bg-black p-6 relative overflow-hidden">
+          <div className="min-h-screen bg-black p-4 md:p-6 relative overflow-hidden">
             <div className="projection-light absolute inset-0"></div>
             <div className="spotlight"></div>
             
             <div className="max-w-7xl mx-auto relative z-10 slide-in">
-              <div className="screen-glow bg-gradient-to-b from-gray-900 to-black rounded-3xl overflow-hidden border border-purple-500/30">
-                <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 px-8 py-6 border-b border-purple-500/30 seat-light">
-                  <div className="flex justify-between items-center">
+              <div className="screen-glow bg-gradient-to-b from-gray-900 to-black rounded-2xl md:rounded-3xl overflow-hidden border border-purple-500/30">
+                <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 px-4 md:px-8 py-4 md:py-6 border-b border-purple-500/30 seat-light">
+                  <div className="flex justify-between items-center flex-wrap gap-2">
                     <div>
-                      <h2 className="text-purple-400 text-3xl font-black cinema-title">NOW SHOWING</h2>
-                      <p className="text-purple-300 mt-1">あなたへのおすすめ作品</p>
+                      <h2 className="text-purple-400 text-2xl md:text-3xl font-black cinema-title">NOW SHOWING</h2>
+                      <p className="text-purple-300 mt-1 text-sm md:text-base">あなたへのおすすめ作品</p>
                     </div>
-                    <div className="text-purple-400 text-xl font-bold">SCREEN 1</div>
+                    <div className="text-purple-400 text-lg md:text-xl font-bold">SCREEN 1</div>
                   </div>
                 </div>
                 
-                <div className="p-8">
-                  <div className="grid md:grid-cols-5 gap-10">
+                <div className="p-4 md:p-8">
+                  <div className="grid md:grid-cols-5 gap-6 md:gap-10">
                     <div className="md:col-span-2">
                       <div className="relative">
                         <div className="absolute -inset-4 bg-purple-600 opacity-20 blur-3xl rounded-2xl"></div>
-                        <div className="relative movie-screen rounded-2xl overflow-hidden border-2 border-purple-500/50">
+                        <div className="relative movie-screen rounded-xl md:rounded-2xl overflow-hidden border-2 border-purple-500/50">
                           <img 
                             src={movie.poster} 
                             alt={movie.title}
@@ -471,40 +492,40 @@
                     </div>
                     
                     <div className="md:col-span-3 flex flex-col justify-center">
-                      <h3 className="text-6xl font-black text-white mb-8 leading-tight cinema-title">
+                      <h3 className="text-3xl md:text-6xl font-black text-white mb-4 md:mb-8 leading-tight cinema-title">
                         {movie.title}
                       </h3>
                       
-                      <div className="grid grid-cols-3 gap-4 mb-8">
-                        <div className="ticket-stub rounded-xl p-5 text-center">
-                          <div className="text-purple-400 text-sm font-bold mb-2">公開年</div>
-                          <div className="text-white text-3xl font-black">{movie.year}</div>
+                      <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6 md:mb-8">
+                        <div className="ticket-stub rounded-lg md:rounded-xl p-3 md:p-5 text-center">
+                          <div className="text-purple-400 text-xs md:text-sm font-bold mb-1 md:mb-2">公開年</div>
+                          <div className="text-white text-xl md:text-3xl font-black">{movie.year}</div>
                         </div>
-                        <div className="ticket-stub rounded-xl p-5 text-center">
-                          <div className="text-purple-400 text-sm font-bold mb-2">評価</div>
-                          <div className="text-purple-400 text-3xl font-black">{movie.rating}</div>
+                        <div className="ticket-stub rounded-lg md:rounded-xl p-3 md:p-5 text-center">
+                          <div className="text-purple-400 text-xs md:text-sm font-bold mb-1 md:mb-2">評価</div>
+                          <div className="text-purple-400 text-xl md:text-3xl font-black">{movie.rating}</div>
                         </div>
-                        <div className="ticket-stub rounded-xl p-5 text-center">
-                          <div className="text-purple-400 text-sm font-bold mb-2">上映時間</div>
-                          <div className="text-white text-3xl font-black">{movie.runtime}分</div>
+                        <div className="ticket-stub rounded-lg md:rounded-xl p-3 md:p-5 text-center">
+                          <div className="text-purple-400 text-xs md:text-sm font-bold mb-1 md:mb-2">上映時間</div>
+                          <div className="text-white text-xl md:text-3xl font-black">{movie.runtime}分</div>
                         </div>
                       </div>
 
-                      <div className="mb-6">
-                        <div className="inline-block bg-purple-900/50 border border-purple-500/50 px-6 py-3 rounded-full">
-                          <span className="text-purple-300 font-bold">{movie.genres}</span>
+                      <div className="mb-4 md:mb-6">
+                        <div className="inline-block bg-purple-900/50 border border-purple-500/50 px-4 md:px-6 py-2 md:py-3 rounded-full">
+                          <span className="text-purple-300 font-bold text-sm md:text-base">{movie.genres}</span>
                         </div>
                       </div>
                       
-                      <div className="cinema-card rounded-xl p-6 mb-8">
-                        <p className="text-gray-300 text-lg leading-relaxed">
+                      <div className="cinema-card rounded-lg md:rounded-xl p-4 md:p-6 mb-6 md:mb-8">
+                        <p className="text-gray-300 text-base md:text-lg leading-relaxed">
                           {movie.desc}
                         </p>
                       </div>
                       
                       <button 
                         onClick={reset}
-                        className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white py-5 px-8 rounded-xl font-black text-xl transition-all transform hover:scale-105 shadow-xl border border-purple-500/50"
+                        className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white py-4 md:py-5 px-6 md:px-8 rounded-xl font-black text-lg md:text-xl transition-all transform hover:scale-105 shadow-xl border border-purple-500/50"
                       >
                         他の作品を探す
                       </button>
@@ -518,28 +539,28 @@
       }
 
       return (
-        <div className="min-h-screen bg-black p-6 relative overflow-hidden">
+        <div className="min-h-screen bg-black p-4 md:p-6 relative overflow-hidden">
           <div className="projection-light absolute inset-0"></div>
           <div className="spotlight"></div>
           
           <div className="max-w-5xl mx-auto relative z-10">
-            <div className="text-center mb-12 slide-in">
+            <div className="text-center mb-8 md:mb-12 slide-in">
               <div className="mb-6">
-                <div className="inline-block bg-purple-900/30 border-2 border-purple-500/50 rounded-full px-8 py-3 mb-6">
-                  <span className="text-purple-400 text-sm font-bold tracking-widest">PREMIUM CINEMA</span>
+                <div className="inline-block bg-purple-900/30 border-2 border-purple-500/50 rounded-full px-6 md:px-8 py-2 md:py-3 mb-6">
+                  <span className="text-purple-400 text-xs md:text-sm font-bold tracking-widest">PREMIUM CINEMA</span>
                 </div>
               </div>
-              <h1 className="text-7xl font-black mb-4 cinema-title">
+              <h1 className="text-5xl md:text-7xl font-black mb-4 cinema-title">
                 <span className="text-white">MOVIE</span>
                 <span className="text-purple-400"> FINDER</span>
               </h1>
-              <p className="text-purple-300 text-2xl font-semibold">
+              <p className="text-purple-300 text-lg md:text-2xl font-semibold px-4">
                 あなただけの映画体験を見つけましょう
               </p>
             </div>
 
-            <div className="mb-8">
-              <div className="flex justify-between text-purple-400 font-bold mb-3 text-lg">
+            <div className="mb-6 md:mb-8">
+              <div className="flex justify-between text-purple-400 font-bold mb-3 text-sm md:text-lg px-2">
                 <span>STEP {step + 1} / {questions.length}</span>
                 <span>{Math.round(((step + 1) / questions.length) * 100)}%</span>
               </div>
@@ -551,48 +572,48 @@
               </div>
             </div>
 
-            <div className="cinema-card rounded-3xl p-10 slide-in">
-              <div className="text-center mb-12">
-                <div className="inline-block bg-purple-900/50 border border-purple-500/50 rounded-full px-6 py-2 mb-6">
-                  <span className="text-purple-400 font-bold text-sm tracking-wider">{currentQuestion.subtitle}</span>
+            <div className="cinema-card rounded-2xl md:rounded-3xl p-6 md:p-10 slide-in">
+              <div className="text-center mb-8 md:mb-12">
+                <div className="inline-block bg-purple-900/50 border border-purple-500/50 rounded-full px-4 md:px-6 py-1 md:py-2 mb-4 md:mb-6">
+                  <span className="text-purple-400 font-bold text-xs md:text-sm tracking-wider">{currentQuestion.subtitle}</span>
                 </div>
-                <h2 className="text-5xl font-black text-white mb-4 cinema-title">
+                <h2 className="text-3xl md:text-5xl font-black text-white mb-4 cinema-title px-2">
                   {currentQuestion.question}
                 </h2>
               </div>
 
-              <div className={`grid gap-5 mb-8 ${currentQuestion.options.length > 9 ? 'grid-cols-4' : currentQuestion.options.length > 6 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              <div className={`grid gap-3 md:gap-5 mb-6 md:mb-8 ${currentQuestion.options.length > 9 ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4' : currentQuestion.options.length > 6 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2'}`}>
                 {currentQuestion.options.map(option => (
                   <button
                     key={option.value}
                     onClick={() => handleAnswer(currentQuestion.id, option.value)}
-                    className={`seat-button p-6 rounded-xl font-bold ${
+                    className={`seat-button p-4 md:p-6 rounded-xl font-bold ${
                       answers[currentQuestion.id] === option.value ? 'selected' : ''
                     }`}
                   >
                     <div className="text-box">
                       {option.code}
                     </div>
-                    <div className="text-xl text-white font-black mb-1">{option.label}</div>
-                    <div className="text-sm text-purple-300">{option.desc}</div>
+                    <div className="text-base md:text-xl text-white font-black mb-1">{option.label}</div>
+                    <div className="text-xs md:text-sm text-purple-300">{option.desc}</div>
                   </button>
                 ))}
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex gap-3 md:gap-4">
                 {step > 0 && (
                   <button
                     onClick={goBack}
-                    className="flex-1 border-2 border-purple-500/50 bg-gray-900/50 hover:bg-gray-800/50 text-purple-400 py-4 rounded-xl font-bold text-lg transition-all"
+                    className="flex-1 border-2 border-purple-500/50 bg-gray-900/50 hover:bg-gray-800/50 text-purple-400 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all"
                   >
-                    ← 前へ戻る
+                    ← 前へ
                   </button>
                 )}
                 
                 {allAnswered && (
                   <button
                     onClick={findMovie}
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white py-4 rounded-xl font-black text-xl transition-all transform hover:scale-105 shadow-xl border border-purple-500/50"
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white py-3 md:py-4 rounded-xl font-black text-base md:text-xl transition-all transform hover:scale-105 shadow-xl border border-purple-500/50"
                   >
                     作品を検索
                   </button>
