@@ -193,10 +193,10 @@
       margin: 0 auto 12px;
       position: relative;
       overflow: hidden;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 900;
       color: rgba(167, 139, 250, 1);
-      letter-spacing: -1px;
+      letter-spacing: -0.5px;
     }
 
     .text-box::before {
@@ -245,40 +245,115 @@
       const questions = [
         {
           id: 'type',
-          question: 'どちらの作品タイプをお選びですか？',
+          question: 'アニメ？実写？',
           subtitle: 'SCREEN 1',
           options: [
-            { value: 'anime', label: 'アニメーション', desc: 'Animation', code: 'ANI' },
-            { value: 'live', label: '実写映画', desc: 'Live Action', code: 'LIVE' },
-            { value: 'any', label: 'おまかせ', desc: 'Any Type', code: 'ALL' }
+            { value: 'anime', label: 'アニメ', desc: 'Animation', code: 'ANI' },
+            { value: 'live', label: '実写', desc: 'Live', code: 'LIVE' },
+            { value: 'any', label: 'どちらでも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'award',
+          question: 'どんな作品を見たい？',
+          subtitle: 'SCREEN 2',
+          options: [
+            { value: 'award', label: '受賞作品', desc: 'Award', code: 'AWD' },
+            { value: 'popular', label: '人気作品', desc: 'Popular', code: 'POP' },
+            { value: 'hidden', label: '隠れた名作', desc: 'Hidden', code: 'HID' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
           ]
         },
         {
           id: 'genre',
-          question: 'お好みのジャンルは？',
-          subtitle: 'SCREEN 2',
+          question: '好きなジャンルは？',
+          subtitle: 'SCREEN 3',
           options: [
             { value: 'action', label: 'アクション', desc: 'Action', code: 'ACT' },
             { value: 'comedy', label: 'コメディ', desc: 'Comedy', code: 'COM' },
             { value: 'horror', label: 'ホラー', desc: 'Horror', code: 'HOR' },
-            { value: 'romance', label: 'ロマンス', desc: 'Romance', code: 'ROM' },
+            { value: 'romance', label: '恋愛', desc: 'Romance', code: 'ROM' },
             { value: 'scifi', label: 'SF', desc: 'Sci-Fi', code: 'SCI' },
             { value: 'drama', label: 'ドラマ', desc: 'Drama', code: 'DRA' },
             { value: 'thriller', label: 'スリラー', desc: 'Thriller', code: 'THR' },
             { value: 'fantasy', label: 'ファンタジー', desc: 'Fantasy', code: 'FAN' },
-            { value: 'any', label: 'おまかせ', desc: 'Any Genre', code: 'ALL' }
+            { value: 'mystery', label: 'ミステリー', desc: 'Mystery', code: 'MYS' },
+            { value: 'adventure', label: '冒険', desc: 'Adventure', code: 'ADV' },
+            { value: 'crime', label: 'クライム', desc: 'Crime', code: 'CRM' },
+            { value: 'family', label: '家族向け', desc: 'Family', code: 'FAM' },
+            { value: 'war', label: '戦争', desc: 'War', code: 'WAR' },
+            { value: 'musical', label: 'ミュージカル', desc: 'Musical', code: 'MUS' },
+            { value: 'documentary', label: 'ドキュメンタリー', desc: 'Documentary', code: 'DOC' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
           ]
         },
         {
           id: 'mood',
-          question: '今日の気分は？',
-          subtitle: 'SCREEN 3',
+          question: '今の気分は？',
+          subtitle: 'SCREEN 4',
           options: [
-            { value: 'exciting', label: '興奮したい', desc: 'Exciting', code: 'EXC' },
-            { value: 'calm', label: '落ち着きたい', desc: 'Calm', code: 'CAL' },
+            { value: 'exciting', label: 'ワクワク', desc: 'Exciting', code: 'EXC' },
+            { value: 'calm', label: 'しっとり', desc: 'Calm', code: 'CAL' },
+            { value: 'thrilling', label: 'ドキドキ', desc: 'Thrilling', code: 'THR' },
             { value: 'funny', label: '笑いたい', desc: 'Funny', code: 'FUN' },
-            { value: 'crying', label: '感動したい', desc: 'Emotional', code: 'EMO' },
-            { value: 'any', label: 'おまかせ', desc: 'Any Mood', code: 'ALL' }
+            { value: 'crying', label: '泣きたい', desc: 'Crying', code: 'CRY' },
+            { value: 'inspiring', label: '感動したい', desc: 'Inspiring', code: 'INS' },
+            { value: 'thinking', label: '考えたい', desc: 'Thinking', code: 'THK' },
+            { value: 'relaxing', label: 'リラックス', desc: 'Relaxing', code: 'REL' },
+            { value: 'scared', label: '怖いの見たい', desc: 'Scared', code: 'SCR' },
+            { value: 'romantic', label: 'ロマンチック', desc: 'Romantic', code: 'RMT' },
+            { value: 'nostalgic', label: '懐かしい', desc: 'Nostalgic', code: 'NOS' },
+            { value: 'energetic', label: '元気になりたい', desc: 'Energetic', code: 'ENR' },
+            { value: 'any', label: 'どんな気分でも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'language',
+          question: '言語は？',
+          subtitle: 'SCREEN 5',
+          options: [
+            { value: 'ja', label: '日本語', desc: 'Japanese', code: 'JPN' },
+            { value: 'en', label: '英語', desc: 'English', code: 'ENG' },
+            { value: 'ko', label: '韓国語', desc: 'Korean', code: 'KOR' },
+            { value: 'zh', label: '中国語', desc: 'Chinese', code: 'CHN' },
+            { value: 'fr', label: 'フランス語', desc: 'French', code: 'FRA' },
+            { value: 'other', label: 'その他', desc: 'Other', code: 'OTH' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'runtime',
+          question: '視聴時間は？',
+          subtitle: 'SCREEN 6',
+          options: [
+            { value: 'short', label: '短め (90分以下)', desc: 'Short', code: 'SHT' },
+            { value: 'medium', label: '普通 (90-120分)', desc: 'Medium', code: 'MED' },
+            { value: 'long', label: '長め (120分以上)', desc: 'Long', code: 'LNG' },
+            { value: 'any', label: '気にしない', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'setting',
+          question: '舞台・世界観は？',
+          subtitle: 'SCREEN 7',
+          options: [
+            { value: 'modern', label: '現代', desc: 'Modern', code: 'MOD' },
+            { value: 'past', label: '過去', desc: 'Past', code: 'PST' },
+            { value: 'future', label: '未来', desc: 'Future', code: 'FUT' },
+            { value: 'fantasy', label: 'ファンタジー', desc: 'Fantasy', code: 'FAN' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'with',
+          question: '誰と見る？',
+          subtitle: 'SCREEN 8',
+          options: [
+            { value: 'alone', label: '一人', desc: 'Alone', code: 'ALN' },
+            { value: 'friends', label: '友達', desc: 'Friends', code: 'FRD' },
+            { value: 'partner', label: '恋人', desc: 'Partner', code: 'PTR' },
+            { value: 'family', label: '家族', desc: 'Family', code: 'FAM' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
           ]
         }
       ];
@@ -474,7 +549,7 @@
                 </h2>
               </div>
 
-              <div className={`grid gap-5 mb-8 ${currentQuestion.options.length > 6 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              <div className={`grid gap-5 mb-8 ${currentQuestion.options.length > 9 ? 'grid-cols-4' : currentQuestion.options.length > 6 ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 {currentQuestion.options.map(option => (
                   <button
                     key={option.value}
