@@ -1,283 +1,619 @@
-export default async function handler(req, res) {
-  // CORSヘッダー
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
-  // OPTIONSリクエストの処理
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const { answers } = req.body;
-  const TMDB_API_KEY = process.env.TMDB_API_KEY;
-  const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-
-  if (!TMDB_API_KEY) {
-    console.error('❌ TMDB_API_KEY is not set');
-    return res.status(500).json({ error: 'APIキーが設定されていません' });
-  }
-
-  console.log('📥 Received answers:', JSON.stringify(answers));
-
-  try {
-    // ジャンルマッピング
-    const genreMap = {
-      action: 28,
-      comedy: 35,
-      horror: 27,
-      romance: 10749,
-      scifi: 878,
-      drama: 18,
-      thriller: 53,
-      fantasy: 14,
-      mystery: 9648,
-      adventure: 12,
-      crime: 80,
-      family: 10751,
-      animation: 16,
-      war: 10752,
-      musical: 10402,
-      documentary: 99
-    };
-
-    // 年代マッピング
-    const decadeMap = {
-      '1990s': { min: '1900-01-01', max: '1999-12-31' },
-      '2000s': { min: '2000-01-01', max: '2009-12-31' },
-      '2010s': { min: '2010-01-01', max: '2019-12-31' },
-      '2020s': { min: '2020-01-01', max: '2029-12-31' }
-    };
-
-    // 視聴時間マッピング
-    const runtimeMap = {
-      short: { min: 0, max: 90 },
-      medium: { min: 90, max: 120 },
-      long: { min: 120, max: 300 }
-    };
-
-    // 優先順位リスト（上から順に拘束力が強い）
-    // 1. type (アニメ/実写) - 最強
-    // 2. language (言語)
-    // 3. genre (ジャンル)
-    // 4. award (受賞作品かどうか)
-    // 5. decade (年代)
-    // 6. runtime (視聴時間)
-    const priorityLevels = [
-      ['type', 'language', 'genre', 'award', 'decade', 'runtime'],
-      ['type', 'language', 'genre', 'award', 'decade'],
-      ['type', 'language', 'genre', 'award'],
-      ['type', 'language', 'genre'],
-      ['type', 'genre'],
-      ['type'],
-      []
-    ];
-
-    // 各レベルで検索を試行
-    for (let level = 0; level < priorityLevels.length; level++) {
-      const activeConditions = priorityLevels[level];
-      
-      console.log(`\n🔍 レベル ${level + 1} 検索開始`);
-      console.log('適用条件:', activeConditions.join(', ') || '条件なし（人気作品）');
-
-      // 基本パラメータ
-      const params = new URLSearchParams({
-        api_key: TMDB_API_KEY,
-        language: 'ja-JP',
-        sort_by: 'popularity.desc',
-        include_adult: 'false',
-        'vote_count.gte': '10',
-        page: '1'
-      });
-
-      // 条件1: アニメ or 実写（最優先）
-      if (activeConditions.includes('type') && answers.type) {
-        if (answers.type === 'anime') {
-          params.append('with_genres', '16');
-          console.log('  ✓ アニメ指定');
-        } else if (answers.type === 'live') {
-          params.append('without_genres', '16');
-          console.log('  ✓ 実写指定');
-        }
-      }
-
-      // 条件2: 言語
-      if (activeConditions.includes('language') && answers.language && answers.language !== 'any') {
-        if (['ja', 'en', 'ko', 'zh', 'fr'].includes(answers.language)) {
-          params.append('with_original_language', answers.language);
-          console.log('  ✓ 言語:', answers.language);
-        }
-      }
-
-      // 条件3: ジャンル
-      if (activeConditions.includes('genre') && answers.genre && answers.genre !== 'any') {
-        if (genreMap[answers.genre]) {
-          const currentGenres = params.get('with_genres');
-          if (currentGenres) {
-            params.set('with_genres', `${currentGenres},${genreMap[answers.genre]}`);
-          } else {
-            params.append('with_genres', genreMap[answers.genre]);
-          }
-          console.log('  ✓ ジャンル:', answers.genre);
-        }
-      }
-
-      // 条件4: 受賞作品 / 人気作品 / 隠れた名作
-      if (activeConditions.includes('award') && answers.award) {
-        if (answers.award === 'award') {
-          params.set('sort_by', 'vote_average.desc');
-          params.set('vote_count.gte', '500');
-          params.append('vote_average.gte', '7.0');
-          console.log('  ✓ 受賞作品指定');
-        } else if (answers.award === 'popular') {
-          params.set('sort_by', 'popularity.desc');
-          params.set('vote_count.gte', '100');
-          console.log('  ✓ 人気作品指定');
-        } else if (answers.award === 'hidden') {
-          params.set('sort_by', 'vote_average.desc');
-          params.set('vote_count.gte', '20');
-          params.set('vote_count.lte', '500');
-          params.append('vote_average.gte', '6.5');
-          console.log('  ✓ 隠れた名作指定');
-        }
-      }
-
-      // 条件5: 年代
-      if (activeConditions.includes('decade') && answers.decade && answers.decade !== 'any') {
-        if (decadeMap[answers.decade]) {
-          const decade = decadeMap[answers.decade];
-          params.append('primary_release_date.gte', decade.min);
-          params.append('primary_release_date.lte', decade.max);
-          console.log('  ✓ 年代:', answers.decade);
-        }
-      }
-
-      // 条件6: 視聴時間
-      if (activeConditions.includes('runtime') && answers.runtime && answers.runtime !== 'any') {
-        if (runtimeMap[answers.runtime]) {
-          const runtime = runtimeMap[answers.runtime];
-          params.append('with_runtime.gte', runtime.min);
-          params.append('with_runtime.lte', runtime.max);
-          console.log('  ✓ 視聴時間:', answers.runtime);
-        }
-      }
-
-      const url = `${TMDB_BASE_URL}/discover/movie?${params.toString()}`;
-      console.log('📡 API URL:', url);
-
-      let response;
-      let data;
-
-      try {
-        response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          console.error(`❌ TMDB API Error: ${response.status} ${response.statusText}`);
-          continue; // 次のレベルへ
-        }
-
-        const text = await response.text();
-        console.log('📄 Response preview:', text.substring(0, 200));
-        
-        data = JSON.parse(text);
-      } catch (fetchError) {
-        console.error('❌ Fetch/Parse Error:', fetchError.message);
-        continue; // 次のレベルへ
-      }
-      
-      const movieList = data.results || [];
-      console.log(`📊 結果: ${movieList.length}件`);
-
-      if (movieList.length > 0) {
-        console.log(`✅ レベル ${level + 1} で映画が見つかりました！`);
-        
-        // ランダムに選択（上位20件から）
-        const topMovies = movieList.slice(0, Math.min(20, movieList.length));
-        const randomMovie = topMovies[Math.floor(Math.random() * topMovies.length)];
-        
-        console.log('🎬 選択された映画ID:', randomMovie.id);
-        
-        // 詳細情報を取得
-        try {
-          const detailResponse = await fetch(
-            `${TMDB_BASE_URL}/movie/${randomMovie.id}?api_key=${TMDB_API_KEY}&language=ja-JP`
-          );
-          
-          if (!detailResponse.ok) {
-            console.error('❌ Detail API Error:', detailResponse.status);
-            // 詳細が取得できなくても基本情報で返す
-            return res.status(200).json({
-              title: randomMovie.title || randomMovie.original_title,
-              originalTitle: randomMovie.original_title,
-              year: randomMovie.release_date ? new Date(randomMovie.release_date).getFullYear() : null,
-              rating: randomMovie.vote_average ? randomMovie.vote_average.toFixed(1) : 'N/A',
-              runtime: null,
-              desc: randomMovie.overview || '説明がありません',
-              poster: randomMovie.poster_path 
-                ? `https://image.tmdb.org/t/p/w500${randomMovie.poster_path}` 
-                : 'https://via.placeholder.com/500x750?text=No+Image',
-              genres: ''
-            });
-          }
-
-          const detailText = await detailResponse.text();
-          const movieDetail = JSON.parse(detailText);
-
-          console.log('✅ 映画詳細取得成功:', movieDetail.title);
-
-          return res.status(200).json({
-            title: movieDetail.title || movieDetail.original_title,
-            originalTitle: movieDetail.original_title,
-            year: movieDetail.release_date ? new Date(movieDetail.release_date).getFullYear() : null,
-            rating: movieDetail.vote_average ? movieDetail.vote_average.toFixed(1) : 'N/A',
-            runtime: movieDetail.runtime || null,
-            desc: movieDetail.overview || '説明がありません',
-            poster: movieDetail.poster_path 
-              ? `https://image.tmdb.org/t/p/w500${movieDetail.poster_path}` 
-              : 'https://via.placeholder.com/500x750?text=No+Image',
-            genres: movieDetail.genres?.map(g => g.name).join(', ') || ''
-          });
-        } catch (detailError) {
-          console.error('❌ Detail Error:', detailError.message);
-          // エラーでも基本情報で返す
-          return res.status(200).json({
-            title: randomMovie.title || randomMovie.original_title,
-            originalTitle: randomMovie.original_title,
-            year: randomMovie.release_date ? new Date(randomMovie.release_date).getFullYear() : null,
-            rating: randomMovie.vote_average ? randomMovie.vote_average.toFixed(1) : 'N/A',
-            runtime: null,
-            desc: randomMovie.overview || '説明がありません',
-            poster: randomMovie.poster_path 
-              ? `https://image.tmdb.org/t/p/w500${randomMovie.poster_path}` 
-              : 'https://via.placeholder.com/500x750?text=No+Image',
-            genres: ''
-          });
-        }
-      }
-
-      console.log(`❌ レベル ${level + 1} では見つかりませんでした。次のレベルへ...`);
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>映画診断アプリ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap');
+    
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #0a0a0a;
     }
 
-    // 全レベルで見つからなかった場合
-    console.log('⚠️ 全レベルで映画が見つかりませんでした');
-    return res.status(200).json({ 
-      error: '申し訳ございません。条件に合う映画が見つかりませんでした。' 
-    });
+    @keyframes ambient-light {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.6; }
+    }
 
-  } catch (error) {
-    console.error('❌ 致命的エラー:', error);
-    return res.status(500).json({ 
-      error: 'サーバーエラーが発生しました',
-      details: error.message 
-    });
-  }
-}
+    .ambient-light {
+      animation: ambient-light 4s ease-in-out infinite;
+    }
+
+    @keyframes spotlight-sweep {
+      0% { left: -100%; }
+      100% { left: 200%; }
+    }
+
+    .spotlight {
+      position: absolute;
+      width: 50%;
+      height: 200%;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 215, 0, 0.1) 50%, 
+        transparent);
+      animation: spotlight-sweep 8s linear infinite;
+      pointer-events: none;
+    }
+
+    .screen-glow {
+      box-shadow: 
+        0 0 80px rgba(79, 70, 229, 0.4),
+        inset 0 0 40px rgba(79, 70, 229, 0.1);
+    }
+
+    .seat-light {
+      position: relative;
+    }
+
+    .seat-light::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(167, 139, 250, 0.8) 50%, 
+        transparent);
+    }
+
+    @keyframes flicker-screen {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.97; }
+    }
+
+    .flicker {
+      animation: flicker-screen 0.15s infinite;
+    }
+
+    .cinema-card {
+      background: linear-gradient(to bottom, #1a1a1a, #0d0d0d);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cinema-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(167, 139, 250, 0.8) 50%, 
+        transparent);
+    }
+
+    @keyframes slide-in {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .slide-in {
+      animation: slide-in 0.6s ease-out;
+    }
+
+    .projection-light {
+      background: radial-gradient(ellipse at top, 
+        rgba(167, 139, 250, 0.15) 0%, 
+        transparent 70%);
+    }
+
+    .ticket-stub {
+      background: linear-gradient(135deg, #2d1b69 0%, #1a0f3d 100%);
+      border-left: 3px dashed rgba(167, 139, 250, 0.5);
+      position: relative;
+    }
+
+    .ticket-stub::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      background: #0a0a0a;
+      border-radius: 50%;
+      border: 1px solid rgba(167, 139, 250, 0.3);
+    }
+
+    .movie-screen {
+      background: linear-gradient(to bottom, 
+        #1a1a2e 0%, 
+        #16213e 50%, 
+        #0f1419 100%);
+      box-shadow: 
+        0 10px 100px rgba(79, 70, 229, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes progress-glow {
+      0%, 100% {
+        box-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(167, 139, 250, 0.8);
+      }
+    }
+
+    .progress-bar {
+      animation: progress-glow 2s ease-in-out infinite;
+    }
+
+    .seat-button {
+      position: relative;
+      background: linear-gradient(to bottom, #2d1b69, #1a0f3d);
+      border: 2px solid rgba(167, 139, 250, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .seat-button:hover {
+      background: linear-gradient(to bottom, #4c2a9f, #2d1b69);
+      border-color: rgba(167, 139, 250, 0.6);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
+    }
+
+    .seat-button.selected {
+      background: linear-gradient(to bottom, #7c3aed, #5b21b6);
+      border-color: rgba(167, 139, 250, 0.8);
+      box-shadow: 0 0 30px rgba(124, 58, 237, 0.6);
+    }
+
+    .cinema-title {
+      text-shadow: 0 0 20px rgba(167, 139, 250, 0.6);
+    }
+
+    .text-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(91, 33, 182, 0.2));
+      border: 2px solid rgba(167, 139, 250, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 10px;
+      position: relative;
+      overflow: hidden;
+      font-size: 13px;
+      font-weight: 900;
+      color: rgba(167, 139, 250, 1);
+      letter-spacing: -0.5px;
+    }
+
+    @media (min-width: 768px) {
+      .text-box {
+        width: 70px;
+        height: 70px;
+        font-size: 16px;
+        margin-bottom: 12px;
+      }
+    }
+
+    .text-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .seat-button:hover .text-box::before {
+      opacity: 1;
+    }
+
+    @keyframes film-roll {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .film-roll {
+      animation: film-roll 4s linear infinite;
+    }
+
+    .loading-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 4px solid rgba(167, 139, 250, 0.2);
+      border-top-color: rgba(167, 139, 250, 0.8);
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+
+    function MovieFinderApp() {
+      const [step, setStep] = useState(0);
+      const [answers, setAnswers] = useState({});
+      const [movie, setMovie] = useState(null);
+      const [loading, setLoading] = useState(false);
+
+      const questions = [
+        {
+          id: 'type',
+          question: 'アニメ？実写？',
+          subtitle: 'SCREEN 1',
+          options: [
+            { value: 'anime', label: 'アニメ', desc: 'Animation', code: 'ANI' },
+            { value: 'live', label: '実写', desc: 'Live', code: 'LIVE' },
+            { value: 'any', label: 'どちらでも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'language',
+          question: '言語は？',
+          subtitle: 'SCREEN 2',
+          options: [
+            { value: 'ja', label: '日本語', desc: 'Japanese', code: 'JPN' },
+            { value: 'en', label: '英語', desc: 'English', code: 'ENG' },
+            { value: 'ko', label: '韓国語', desc: 'Korean', code: 'KOR' },
+            { value: 'zh', label: '中国語', desc: 'Chinese', code: 'CHN' },
+            { value: 'fr', label: 'フランス語', desc: 'French', code: 'FRA' },
+            { value: 'other', label: 'その他', desc: 'Other', code: 'OTH' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'genre',
+          question: '好きなジャンルは？',
+          subtitle: 'SCREEN 3',
+          options: [
+            { value: 'action', label: 'アクション', desc: 'Action', code: 'ACT' },
+            { value: 'comedy', label: 'コメディ', desc: 'Comedy', code: 'COM' },
+            { value: 'horror', label: 'ホラー', desc: 'Horror', code: 'HOR' },
+            { value: 'romance', label: '恋愛', desc: 'Romance', code: 'ROM' },
+            { value: 'scifi', label: 'SF', desc: 'Sci-Fi', code: 'SCI' },
+            { value: 'drama', label: 'ドラマ', desc: 'Drama', code: 'DRA' },
+            { value: 'thriller', label: 'スリラー', desc: 'Thriller', code: 'THR' },
+            { value: 'fantasy', label: 'ファンタジー', desc: 'Fantasy', code: 'FAN' },
+            { value: 'mystery', label: 'ミステリー', desc: 'Mystery', code: 'MYS' },
+            { value: 'adventure', label: '冒険', desc: 'Adventure', code: 'ADV' },
+            { value: 'crime', label: 'クライム', desc: 'Crime', code: 'CRM' },
+            { value: 'family', label: '家族向け', desc: 'Family', code: 'FAM' },
+            { value: 'war', label: '戦争', desc: 'War', code: 'WAR' },
+            { value: 'musical', label: 'ミュージカル', desc: 'Musical', code: 'MUS' },
+            { value: 'documentary', label: 'ドキュメンタリー', desc: 'Documentary', code: 'DOC' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'award',
+          question: 'どんな作品を見たい？',
+          subtitle: 'SCREEN 4',
+          options: [
+            { value: 'award', label: '受賞作品', desc: 'Award', code: 'AWD' },
+            { value: 'popular', label: '人気作品', desc: 'Popular', code: 'POP' },
+            { value: 'hidden', label: '隠れた名作', desc: 'Hidden', code: 'HID' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'decade',
+          question: '何年代の作品？',
+          subtitle: 'SCREEN 5',
+          options: [
+            { value: '1990s', label: '90年代以前', desc: '~1999', code: '90s' },
+            { value: '2000s', label: '00年代', desc: '2000-2009', code: '00s' },
+            { value: '2010s', label: '10年代', desc: '2010-2019', code: '10s' },
+            { value: '2020s', label: '20年代', desc: '2020~', code: '20s' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'runtime',
+          question: '視聴時間は？',
+          subtitle: 'SCREEN 6',
+          options: [
+            { value: 'short', label: '短め (90分以下)', desc: 'Short', code: 'SHT' },
+            { value: 'medium', label: '普通 (90-120分)', desc: 'Medium', code: 'MED' },
+            { value: 'long', label: '長め (120分以上)', desc: 'Long', code: 'LNG' },
+            { value: 'any', label: '気にしない', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'mood',
+          question: '今の気分は？',
+          subtitle: 'SCREEN 7',
+          options: [
+            { value: 'exciting', label: 'ワクワク', desc: 'Exciting', code: 'EXC' },
+            { value: 'calm', label: 'しっとり', desc: 'Calm', code: 'CAL' },
+            { value: 'thrilling', label: 'ハラハラ', desc: 'Thrilling', code: 'HAR' },
+            { value: 'funny', label: '笑いたい', desc: 'Funny', code: 'FUN' },
+            { value: 'crying', label: '泣きたい', desc: 'Crying', code: 'CRY' },
+            { value: 'inspiring', label: 'エモい', desc: 'Emotional', code: 'EMO' },
+            { value: 'thinking', label: '考えたい', desc: 'Thinking', code: 'THK' },
+            { value: 'relaxing', label: 'リラックス', desc: 'Relaxing', code: 'REL' },
+            { value: 'scared', label: '怖いの見たい', desc: 'Scared', code: 'SCR' },
+            { value: 'romantic', label: 'ロマンチック', desc: 'Romantic', code: 'RMT' },
+            { value: 'nostalgic', label: '懐かしい', desc: 'Nostalgic', code: 'NOS' },
+            { value: 'energetic', label: '元気になりたい', desc: 'Energetic', code: 'ENR' },
+            { value: 'any', label: 'どんな気分でも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'setting',
+          question: '舞台・世界観は？',
+          subtitle: 'SCREEN 8',
+          options: [
+            { value: 'modern', label: '現代', desc: 'Modern', code: 'MOD' },
+            { value: 'past', label: '過去', desc: 'Past', code: 'PST' },
+            { value: 'future', label: '未来', desc: 'Future', code: 'FUT' },
+            { value: 'fantasy', label: 'ファンタジー', desc: 'Fantasy', code: 'FAN' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
+          ]
+        },
+        {
+          id: 'with',
+          question: '誰と見る？',
+          subtitle: 'SCREEN 9',
+          options: [
+            { value: 'alone', label: '一人', desc: 'Alone', code: 'ALN' },
+            { value: 'friends', label: '友達', desc: 'Friends', code: 'FRD' },
+            { value: 'partner', label: '恋人', desc: 'Partner', code: 'PTR' },
+            { value: 'family', label: '家族', desc: 'Family', code: 'FAM' },
+            { value: 'any', label: 'どれでも', desc: 'Any', code: 'ALL' }
+          ]
+        }
+      ];
+
+      const handleAnswer = (questionId, value) => {
+        setAnswers(prev => ({ ...prev, [questionId]: value }));
+        if (step < questions.length - 1) {
+          setTimeout(() => setStep(step + 1), 300);
+        }
+      };
+
+      const goBack = () => {
+        if (step > 0) {
+          setStep(step - 1);
+        }
+      };
+
+      const findMovie = async () => {
+        setLoading(true);
+        try {
+          const response = await fetch('/api/movies', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers })
+          });
+          const data = await response.json();
+          if (data.error) {
+            alert('エラー: ' + data.error);
+          } else {
+            setMovie(data);
+          }
+        } catch (error) {
+          alert('エラーが発生しました: ' + error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const reset = () => {
+        setStep(0);
+        setAnswers({});
+        setMovie(null);
+      };
+
+      const currentQuestion = questions[step];
+      const allAnswered = Object.keys(answers).length === questions.length;
+
+      if (loading) {
+        return (
+          <div className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden p-4">
+            <div className="projection-light absolute inset-0"></div>
+            <div className="spotlight"></div>
+            <div className="text-center relative z-10 slide-in">
+              <div className="movie-screen w-60 h-48 md:w-80 md:h-64 mx-auto mb-8 md:mb-12 rounded-2xl flex items-center justify-center relative overflow-hidden">
+                <div className="flicker absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900 opacity-20"></div>
+                <div className="loading-circle film-roll"></div>
+              </div>
+              <h2 className="text-purple-400 text-2xl md:text-4xl font-black mb-4 md:mb-6 cinema-title">
+                NOW LOADING
+              </h2>
+              <div className="w-60 md:w-80 h-2 bg-gray-900 rounded-full mx-auto overflow-hidden border border-purple-500/30">
+                <div className="h-full bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-600 progress-bar" style={{width: '100%'}}></div>
+              </div>
+              <p className="text-purple-300 mt-4 md:mt-6 text-base md:text-lg tracking-wide px-4">
+                あなたにぴったりの作品を探しています...
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      if (movie) {
+        return (
+          <div className="min-h-screen bg-black p-4 md:p-6 relative overflow-hidden">
+            <div className="projection-light absolute inset-0"></div>
+            <div className="spotlight"></div>
+            
+            <div className="max-w-7xl mx-auto relative z-10 slide-in">
+              <div className="screen-glow bg-gradient-to-b from-gray-900 to-black rounded-2xl md:rounded-3xl overflow-hidden border border-purple-500/30">
+                <div className="bg-gradient-to-r from-purple-900/50 to-indigo-900/50 px-4 md:px-8 py-4 md:py-6 border-b border-purple-500/30 seat-light">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                    <div>
+                      <h2 className="text-purple-400 text-xl md:text-3xl font-black cinema-title">NOW SHOWING</h2>
+                      <p className="text-purple-300 text-sm md:text-base mt-1">あなたへのおすすめ作品</p>
+                    </div>
+                    <div className="text-purple-400 text-base md:text-xl font-bold">SCREEN 1</div>
+                  </div>
+                </div>
+                
+                <div className="p-4 md:p-8">
+                  <div className="grid md:grid-cols-5 gap-6 md:gap-10">
+                    <div className="md:col-span-2">
+                      <div className="relative">
+                        <div className="absolute -inset-2 md:-inset-4 bg-purple-600 opacity-20 blur-3xl rounded-2xl"></div>
+                        <div className="relative movie-screen rounded-xl md:rounded-2xl overflow-hidden border-2 border-purple-500/50">
+                          <img 
+                            src={movie.poster} 
+                            alt={movie.title}
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="md:col-span-3 flex flex-col justify-center">
+                      <h3 className="text-3xl md:text-6xl font-black text-white mb-4 md:mb-8 leading-tight cinema-title">
+                        {movie.title}
+                      </h3>
+                      
+                      <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6 md:mb-8">
+                        <div className="ticket-stub rounded-lg md:rounded-xl p-3 md:p-5 text-center">
+                          <div className="text-purple-400 text-xs md:text-sm font-bold mb-1 md:mb-2">公開年</div>
+                          <div className="text-white text-xl md:text-3xl font-black">{movie.year}</div>
+                        </div>
+                        <div className="ticket-stub rounded-lg md:rounded-xl p-3 md:p-5 text-center">
+                          <div className="text-purple-400 text-xs md:text-sm font-bold mb-1 md:mb-2">評価</div>
+                          <div className="text-purple-400 text-xl md:text-3xl font-black">{movie.rating}</div>
+                        </div>
+                        <div className="ticket-stub rounded-lg md:rounded-xl p-3 md:p-5 text-center">
+                          <div className="text-purple-400 text-xs md:text-sm font-bold mb-1 md:mb-2">上映時間</div>
+                          <div className="text-white text-xl md:text-3xl font-black">{movie.runtime}分</div>
+                        </div>
+                      </div>
+
+                      <div className="mb-4 md:mb-6">
+                        <div className="inline-block bg-purple-900/50 border border-purple-500/50 px-4 md:px-6 py-2 md:py-3 rounded-full">
+                          <span className="text-purple-300 text-sm md:text-base font-bold">{movie.genres}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="cinema-card rounded-lg md:rounded-xl p-4 md:p-6 mb-6 md:mb-8">
+                        <p className="text-gray-300 text-sm md:text-lg leading-relaxed">
+                          {movie.desc}
+                        </p>
+                      </div>
+                      
+                      <button 
+                        onClick={reset}
+                        className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white py-4 md:py-5 px-6 md:px-8 rounded-xl font-black text-lg md:text-xl transition-all transform hover:scale-105 shadow-xl border border-purple-500/50"
+                      >
+                        他の作品を探す
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen bg-black p-4 md:p-6 relative overflow-hidden">
+          <div className="projection-light absolute inset-0"></div>
+          <div className="spotlight"></div>
+          
+          <div className="max-w-5xl mx-auto relative z-10">
+            <div className="text-center mb-8 md:mb-12 slide-in px-4">
+              <div className="mb-4 md:mb-6">
+                <div className="inline-block bg-purple-900/30 border-2 border-purple-500/50 rounded-full px-4 md:px-8 py-2 md:py-3 mb-4 md:mb-6">
+                  <span className="text-purple-400 text-xs md:text-sm font-bold tracking-widest">PREMIUM CINEMA</span>
+                </div>
+              </div>
+              <h1 className="text-4xl md:text-7xl font-black mb-3 md:mb-4 cinema-title">
+                <span className="text-white">MOVIE</span>
+                <span className="text-purple-400"> FINDER</span>
+              </h1>
+              <p className="text-purple-300 text-lg md:text-2xl font-semibold">
+                あなただけの映画体験を見つけましょう
+              </p>
+            </div>
+
+            <div className="mb-6 md:mb-8 px-4">
+              <div className="flex justify-between text-purple-400 font-bold mb-2 md:mb-3 text-sm md:text-lg">
+                <span>STEP {step + 1} / {questions.length}</span>
+                <span>{Math.round(((step + 1) / questions.length) * 100)}%</span>
+              </div>
+              <div className="w-full bg-gray-900 rounded-full h-2 md:h-3 overflow-hidden border border-purple-500/30">
+                <div 
+                  className="h-full bg-gradient-to-r from-purple-600 to-indigo-600 transition-all duration-500 progress-bar rounded-full"
+                  style={{ width: `${((step + 1) / questions.length) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="cinema-card rounded-2xl md:rounded-3xl p-6 md:p-10 slide-in">
+              <div className="text-center mb-8 md:mb-12">
+                <div className="inline-block bg-purple-900/50 border border-purple-500/50 rounded-full px-4 md:px-6 py-1 md:py-2 mb-4 md:mb-6">
+                  <span className="text-purple-400 font-bold text-xs md:text-sm tracking-wider">{currentQuestion.subtitle}</span>
+                </div>
+                <h2 className="text-2xl md:text-5xl font-black text-white mb-2 md:mb-4 cinema-title px-2">
+                  {currentQuestion.question}
+                </h2>
+              </div>
+
+              <div className={`grid gap-3 md:gap-5 mb-6 md:mb-8 ${currentQuestion.options.length > 9 ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4' : currentQuestion.options.length > 6 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-2'}`}>
+                {currentQuestion.options.map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => handleAnswer(currentQuestion.id, option.value)}
+                    className={`seat-button p-4 md:p-6 rounded-xl font-bold ${
+                      answers[currentQuestion.id] === option.value ? 'selected' : ''
+                    }`}
+                  >
+                    <div className="text-box">
+                      {option.code}
+                    </div>
+                    <div className="text-base md:text-xl text-white font-black mb-0 md:mb-1">{option.label}</div>
+                    <div className="text-xs md:text-sm text-purple-300">{option.desc}</div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-3 md:gap-4">
+                {step > 0 && (
+                  <button
+                    onClick={goBack}
+                    className="flex-1 border-2 border-purple-500/50 bg-gray-900/50 hover:bg-gray-800/50 text-purple-400 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all"
+                  >
+                    ← 前へ戻る
+                  </button>
+                )}
+                
+                {allAnswered && (
+                  <button
+                    onClick={findMovie}
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white py-3 md:py-4 rounded-xl font-black text-base md:text-xl transition-all transform hover:scale-105 shadow-xl border border-purple-500/50"
+                  >
+                    作品を検索
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<MovieFinderApp />, document.getElementById('root'));
+  </script>
+</body>
+</html>
