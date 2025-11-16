@@ -13,37 +13,260 @@
   <div id="root"></div>
   <script type="text/babel">
     const { useState } = React;
+
     function MovieFinderApp() {
       const [step, setStep] = useState(0);
       const [answers, setAnswers] = useState({});
       const [movie, setMovie] = useState(null);
       const [loading, setLoading] = useState(false);
-      const genreMap = { action: 28, comedy: 35, drama: 18, horror: 27, romance: 10749, scifi: 878, thriller: 53, animation: 16, fantasy: 14, mystery: 9648, crime: 80, documentary: 99 };
-      const japaneseAwardMovies = [
-        { title: '侍タイムスリッパー', year: 2024, isAnime: false, isAward: true },
-        { title: 'ゴジラ-1.0', year: 2023, isAnime: false, isAward: true },
-        { title: '君の名は。', year: 2016, isAnime: true, isAward: true },
-        { title: '千と千尋の神隠し', year: 2001, isAnime: true, isAward: true }
-      ];
+
       const questions = [
-        { id: 'language', question: '言語は？', emoji: '🌍', options: [{ value: 'ja', label: '日本語', emoji: '🇯🇵' }, { value: 'en', label: '英語', emoji: '🇺🇸' }] }
+        {
+          id: 'type',
+          question: 'アニメ？実写？',
+          emoji: '🎬',
+          options: [
+            { value: 'anime', label: 'アニメ', emoji: '🎨' },
+            { value: 'live', label: '実写', emoji: '🎬' }
+          ]
+        },
+        {
+          id: 'award',
+          question: '受賞作品を見たい？',
+          emoji: '🏆',
+          options: [
+            { value: 'yes', label: '受賞作品', emoji: '🏆' },
+            { value: 'no', label: '人気作品', emoji: '✨' }
+          ]
+        },
+        {
+          id: 'genre',
+          question: '好きなジャンルは？',
+          emoji: '🎭',
+          options: [
+            { value: 'action', label: 'アクション', emoji: '💥' },
+            { value: 'comedy', label: 'コメディ', emoji: '😂' },
+            { value: 'horror', label: 'ホラー', emoji: '👻' },
+            { value: 'romance', label: '恋愛', emoji: '💕' },
+            { value: 'scifi', label: 'SF', emoji: '🚀' },
+            { value: 'drama', label: 'ドラマ', emoji: '🎭' }
+          ]
+        },
+        {
+          id: 'mood',
+          question: '今の気分は？',
+          emoji: '😊',
+          options: [
+            { value: 'exciting', label: 'ワクワク', emoji: '🤩' },
+            { value: 'calm', label: 'しっとり', emoji: '🌙' },
+            { value: 'thrilling', label: 'ドキドキ', emoji: '💓' },
+            { value: 'funny', label: '笑いたい', emoji: '😆' }
+          ]
+        },
+        {
+          id: 'language',
+          question: '言語は？',
+          emoji: '🌍',
+          options: [
+            { value: 'ja', label: '日本語', emoji: '🇯🇵' },
+            { value: 'en', label: '英語', emoji: '🇺🇸' },
+            { value: 'other', label: 'その他', emoji: '🌏' }
+          ]
+        },
+        {
+          id: 'runtime',
+          question: '視聴時間は？',
+          emoji: '⏱️',
+          options: [
+            { value: 'short', label: '短め (90分以下)', emoji: '⚡' },
+            { value: 'medium', label: '普通 (90-120分)', emoji: '⏰' },
+            { value: 'long', label: '長め (120分以上)', emoji: '🎞️' },
+            { value: 'any', label: '気にしない', emoji: '🤷' }
+          ]
+        },
+        {
+          id: 'setting',
+          question: '舞台・世界観は？',
+          emoji: '🌎',
+          options: [
+            { value: 'modern', label: '現代', emoji: '🏙️' },
+            { value: 'past', label: '過去', emoji: '🏛️' },
+            { value: 'future', label: '未来', emoji: '🚀' },
+            { value: 'fantasy', label: 'ファンタジー', emoji: '🧙' }
+          ]
+        },
+        {
+          id: 'with',
+          question: '誰と見る？',
+          emoji: '👥',
+          options: [
+            { value: 'alone', label: '一人', emoji: '🧘' },
+            { value: 'friends', label: '友達', emoji: '👯' },
+            { value: 'partner', label: '恋人', emoji: '💑' },
+            { value: 'family', label: '家族', emoji: '👨‍👩‍👧‍👦' }
+          ]
+        }
       ];
-      const handleAnswer = (questionId, value) => { setAnswers(prev => ({ ...prev, [questionId]: value })); if (step < questions.length - 1) { setTimeout(() => setStep(step + 1), 300); } };
+
+      const handleAnswer = (questionId, value) => {
+        setAnswers(prev => ({ ...prev, [questionId]: value }));
+        if (step < questions.length - 1) {
+          setTimeout(() => setStep(step + 1), 300);
+        }
+      };
+
       const findMovie = async () => {
         setLoading(true);
         try {
-          const response = await fetch('/api/movies', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ answers, japaneseAwardMovies, genreMap }) });
+          const response = await fetch('/api/movies', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers })
+          });
           const data = await response.json();
-          if (data.error) { alert(data.error); } else { setMovie(data); }
-        } catch (error) { alert('エラー: ' + error.message); } finally { setLoading(false); }
+          if (data.error) {
+            alert('エラー: ' + data.error);
+          } else {
+            setMovie(data);
+          }
+        } catch (error) {
+          alert('エラーが発生しました: ' + error.message);
+        } finally {
+          setLoading(false);
+        }
       };
-      const reset = () => { setStep(0); setAnswers({}); setMovie(null); };
+
+      const reset = () => {
+        setStep(0);
+        setAnswers({});
+        setMovie(null);
+      };
+
       const currentQuestion = questions[step];
       const allAnswered = Object.keys(answers).length === questions.length;
-      if (loading) { return (<div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 flex items-center justify-center"><div className="text-6xl animate-bounce">🎬</div></div>); }
-      if (movie) { return (<div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 p-6"><div className="max-w-4xl mx-auto"><div className="bg-white/5 rounded-3xl p-8"><h3 className="text-5xl font-black text-white mb-4">{movie.title}</h3><p className="text-blue-100 text-lg">{movie.desc}</p><button onClick={reset} className="mt-6 bg-gradient-to-r from-yellow-400 to-pink-500 text-white py-4 px-8 rounded-xl font-bold">最初から</button></div></div></div>); }
-      return (<div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 p-6"><div className="max-w-2xl mx-auto"><h1 className="text-6xl font-black text-white mb-8 text-center">🎬 映画診断</h1><div className="bg-white/10 rounded-3xl p-10"><div className="text-center mb-8"><div className="text-7xl mb-4">{currentQuestion.emoji}</div><h2 className="text-4xl font-bold text-white">{currentQuestion.question}</h2></div><div className="grid gap-4 grid-cols-2">{currentQuestion.options.map(option => (<button key={option.value} onClick={() => handleAnswer(currentQuestion.id, option.value)} className="p-6 rounded-2xl font-bold bg-white/20 hover:bg-white/30 text-white"><div className="text-4xl mb-2">{option.emoji}</div><div className="text-lg">{option.label}</div></button>))}</div>{allAnswered && <button onClick={findMovie} className="w-full mt-6 bg-gradient-to-r from-yellow-400 to-purple-500 text-white py-4 rounded-xl text-xl font-black">✨ 映画を見つける！ 🎬</button>}</div></div></div>);
+
+      if (loading) {
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-8xl animate-bounce mb-6">🎬</div>
+              <p className="text-white text-2xl font-bold">映画を探しています...</p>
+            </div>
+          </div>
+        );
+      }
+
+      if (movie) {
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 p-6">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 shadow-2xl">
+                <div className="text-center mb-6">
+                  <div className="text-6xl mb-4">🎬</div>
+                  <h2 className="text-3xl font-black text-white mb-2">あなたにおすすめの映画</h2>
+                </div>
+                
+                {movie.poster && (
+                  <img 
+                    src={movie.poster} 
+                    alt={movie.title}
+                    className="w-full max-w-md mx-auto rounded-2xl shadow-xl mb-6"
+                  />
+                )}
+                
+                <h3 className="text-5xl font-black text-white mb-4 text-center">{movie.title}</h3>
+                
+                <div className="flex justify-center gap-4 mb-6 flex-wrap">
+                  {movie.year && (
+                    <span className="bg-white/20 px-4 py-2 rounded-full text-white font-bold">
+                      📅 {movie.year}年
+                    </span>
+                  )}
+                  {movie.rating && (
+                    <span className="bg-yellow-500/30 px-4 py-2 rounded-full text-white font-bold">
+                      ⭐ {movie.rating}
+                    </span>
+                  )}
+                  {movie.runtime && (
+                    <span className="bg-blue-500/30 px-4 py-2 rounded-full text-white font-bold">
+                      ⏱️ {movie.runtime}分
+                    </span>
+                  )}
+                </div>
+
+                {movie.genres && (
+                  <p className="text-blue-200 text-center mb-4 font-semibold">
+                    🎭 {movie.genres}
+                  </p>
+                )}
+                
+                <p className="text-blue-100 text-lg leading-relaxed mb-8">{movie.desc}</p>
+                
+                <button 
+                  onClick={reset}
+                  className="w-full bg-gradient-to-r from-yellow-400 to-pink-500 text-white py-4 px-8 rounded-xl font-bold text-xl hover:scale-105 transition-transform"
+                >
+                  🔄 もう一度診断する
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 p-6">
+          <div className="max-w-2xl mx-auto">
+            <h1 className="text-6xl font-black text-white mb-8 text-center drop-shadow-lg">
+              🎬 映画診断
+            </h1>
+
+            <div className="mb-6">
+              <div className="flex justify-between mb-2">
+                <span className="text-white font-bold">質問 {step + 1} / {questions.length}</span>
+                <span className="text-white font-bold">{Math.round(((step + 1) / questions.length) * 100)}%</span>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-3">
+                <div 
+                  className="bg-gradient-to-r from-yellow-400 to-pink-500 h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${((step + 1) / questions.length) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-10 shadow-2xl">
+              <div className="text-center mb-8">
+                <div className="text-7xl mb-4 animate-pulse">{currentQuestion.emoji}</div>
+                <h2 className="text-4xl font-bold text-white">{currentQuestion.question}</h2>
+              </div>
+
+              <div className={`grid gap-4 ${currentQuestion.options.length > 4 ? 'grid-cols-2' : 'grid-cols-2'}`}>
+                {currentQuestion.options.map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => handleAnswer(currentQuestion.id, option.value)}
+                    className="p-6 rounded-2xl font-bold bg-white/20 hover:bg-white/30 text-white transform hover:scale-105 transition-all duration-200 shadow-lg"
+                  >
+                    <div className="text-4xl mb-2">{option.emoji}</div>
+                    <div className="text-lg">{option.label}</div>
+                  </button>
+                ))}
+              </div>
+
+              {allAnswered && (
+                <button
+                  onClick={findMovie}
+                  className="w-full mt-8 bg-gradient-to-r from-yellow-400 to-purple-500 text-white py-4 rounded-xl text-xl font-black hover:scale-105 transition-transform shadow-xl animate-pulse"
+                >
+                  ✨ 映画を見つける！ 🎬
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      );
     }
+
     ReactDOM.render(<MovieFinderApp />, document.getElementById('root'));
   </script>
 </body>
