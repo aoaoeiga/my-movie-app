@@ -60,7 +60,13 @@ export default async function handler(req, res) {
       long: { min: 120, max: 300 }
     };
 
-    // 優先順位リスト
+    // 優先順位リスト（上から順に拘束力が強い）
+    // 1. type (アニメ/実写) - 最強
+    // 2. language (言語)
+    // 3. genre (ジャンル)
+    // 4. award (受賞作品かどうか)
+    // 5. decade (年代)
+    // 6. runtime (視聴時間)
     const priorityLevels = [
       ['type', 'language', 'genre', 'award', 'decade', 'runtime'],
       ['type', 'language', 'genre', 'award', 'decade'],
@@ -76,7 +82,7 @@ export default async function handler(req, res) {
       const activeConditions = priorityLevels[level];
       
       console.log(`\n🔍 レベル ${level + 1} 検索開始`);
-      console.log('適用条件:', activeConditions.join(', '));
+      console.log('適用条件:', activeConditions.join(', ') || '条件なし（人気作品）');
 
       // 基本パラメータ
       const params = new URLSearchParams({
@@ -88,7 +94,7 @@ export default async function handler(req, res) {
         page: '1'
       });
 
-      // 条件1: アニメ or 実写
+      // 条件1: アニメ or 実写（最優先）
       if (activeConditions.includes('type') && answers.type) {
         if (answers.type === 'anime') {
           params.append('with_genres', '16');
@@ -120,7 +126,7 @@ export default async function handler(req, res) {
         }
       }
 
-      // 条件4: 受賞作品
+      // 条件4: 受賞作品 / 人気作品 / 隠れた名作
       if (activeConditions.includes('award') && answers.award) {
         if (answers.award === 'award') {
           params.set('sort_by', 'vote_average.desc');
@@ -194,6 +200,7 @@ export default async function handler(req, res) {
       if (movieList.length > 0) {
         console.log(`✅ レベル ${level + 1} で映画が見つかりました！`);
         
+        // ランダムに選択（上位20件から）
         const topMovies = movieList.slice(0, Math.min(20, movieList.length));
         const randomMovie = topMovies[Math.floor(Math.random() * topMovies.length)];
         
@@ -257,9 +264,10 @@ export default async function handler(req, res) {
         }
       }
 
-      console.log(`❌ レベル ${level + 1} では見つかりませんでした`);
+      console.log(`❌ レベル ${level + 1} では見つかりませんでした。次のレベルへ...`);
     }
 
+    // 全レベルで見つからなかった場合
     console.log('⚠️ 全レベルで映画が見つかりませんでした');
     return res.status(200).json({ 
       error: '申し訳ございません。条件に合う映画が見つかりませんでした。' 
